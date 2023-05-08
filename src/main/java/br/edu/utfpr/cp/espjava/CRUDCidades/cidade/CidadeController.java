@@ -1,7 +1,6 @@
-package br.edu.utfpr.cp.espjava.CRUDCidades.visao;
+package br.edu.utfpr.cp.espjava.CRUDCidades.cidade;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Controller;
@@ -22,8 +21,8 @@ public class CidadeController {
      * Objeto Set para armazenar a lista de cidades
      * 
      * Set
+     private Set<Cidade> cidades;
      */
-    private Set<Cidade> cidades;
 
     private final CidadeRepository repository;
 
@@ -32,8 +31,7 @@ public class CidadeController {
      * O hashset é uma implementação do Set, assim como arraylist de list
      * Fazem parte de Collections.
      */
-    public CidadeController(CidadeRepository repository){
-        cidades = new HashSet<>();
+    public CidadeController(final CidadeRepository repository){
         this.repository = repository;
     }
     
@@ -43,17 +41,19 @@ public class CidadeController {
     @GetMapping("/")
     public String listar(Model memoria){
 
-        memoria.addAttribute("listaCidades", 
-            repository
-            .findAll()
-                .stream()
-                .map(cidade -> 
-                new Cidade(
-                    cidade.getNome(), 
-                    cidade.getEstado()))
-                          .collect(Collectors.toList()));
+        memoria.addAttribute("listaCidades", this.converteCidade(repository.findAll()));
 
         return "/crud";
+    }
+
+    private List<Cidade> converteCidade( List<CidadeEntidade> cidades ){
+
+        return cidades.stream()
+                .map(
+                      cidade -> new Cidade(
+                      cidade.getNome(), 
+                      cidade.getEstado()))
+                .collect(Collectors.toList());
     }
 
     @PostMapping("/criar")
@@ -64,18 +64,22 @@ public class CidadeController {
             validacao
             .getFieldErrors()
             .forEach(
-                error -> 
-                memoria.addAttribute(error.getField(), error.getDefaultMessage()));
+                error -> memoria.addAttribute( 
+                    error.getField(), 
+                    error.getDefaultMessage()));
+
                 memoria.addAttribute("nomeInformado", cidade.getNome());
                 memoria.addAttribute("estadoInformado", cidade.getEstado());
-                memoria.addAttribute("listaCidades", cidades);
+                memoria.addAttribute("listaCidades", this.converteCidade(repository.findAll()));
             return "/crud";
         } else {
+            /*
             var novaCidade = new CidadeEntidade();
             novaCidade.setNome(cidade.getNome());
             novaCidade.setEstado(cidade.getEstado());
+            */
             
-            repository.save(novaCidade);
+            repository.save(cidade.clonar());
             //cidades.add(cidade);
 
         }
@@ -113,10 +117,7 @@ public class CidadeController {
     public String alterar(
         @RequestParam String nomeAtual,
         @RequestParam String estadoAtual,
-        Cidade cidade,
-        BindingResult validacao,
-        Model memoria
-        ){
+        Cidade cidade){
 
             var cidadeAtual = repository.findByNomeAndEstado(nomeAtual, estadoAtual);        
 
