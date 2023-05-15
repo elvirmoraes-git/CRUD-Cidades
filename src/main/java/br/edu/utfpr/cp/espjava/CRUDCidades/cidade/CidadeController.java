@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-//import org.springframework.data.jpa.repository.JpaRepository;
-
 import jakarta.validation.Valid;
 
 @Controller
@@ -74,9 +72,9 @@ public class CidadeController {
             return "/crud";
         } else {
             /*
-            var novaCidade = new CidadeEntidade();
-            novaCidade.setNome(cidade.getNome());
-            novaCidade.setEstado(cidade.getEstado());
+             * var novaCidade = new CidadeEntidade();
+             * novaCidade.setNome(cidade.getNome());
+             * novaCidade.setEstado(cidade.getEstado());
             */
             
             repository.save(cidade.clonar());
