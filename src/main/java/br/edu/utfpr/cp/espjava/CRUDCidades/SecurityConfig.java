@@ -11,6 +11,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig {
@@ -29,21 +31,27 @@ public class SecurityConfig {
 
         return new InMemoryUserDetailsManager(john, anna);
     }
-
-    @Bean
-    public PasswordEncoder cifrador(){
-        return new BCryptPasswordEncoder();
-    }
-
+    
     @Bean
     public SecurityFilterChain filter(HttpSecurity http) throws Exception{
         return http
         .csrf().disable()
         .authorizeHttpRequests()
         .requestMatchers("/").hasAnyRole("listar", "admin")
-        .requestMatchers("/criar", "/excluir", "/alterar", "/preparaAlterar").hasAnyRole("admin")
+        .requestMatchers("/criar", "/excluir", "/alterar", "/preparaAlterar").hasRole
+        ("admin")
         .anyRequest().denyAll()
         .and()
+        .formLogin().permitAll()
+        .loginPage("/login.html").permitAll()
+        .and()
+        .logout().permitAll()
+        .and()
         .build();
+    }
+    
+    @Bean
+    public PasswordEncoder cifrador(){
+        return new BCryptPasswordEncoder();
     }
 }
